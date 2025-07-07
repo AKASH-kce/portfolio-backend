@@ -1,0 +1,53 @@
+Your `angular.json` is missing the `"outputPath"` property in the build options. This is why the deploy tool cannot find where your build output goes.
+
+---
+
+## How to Fix
+
+1. **Open** `portfolio-client-app/angular.json`.
+2. **Find** the `"options"` object under `"build"` (around line 17 in your file).
+3. **Add** this line inside `"options"`:
+
+```json
+"outputPath": "dist/portfolio-client-app",
+```
+
+So it should look like this:
+
+```json
+"options": {
+  "outputPath": "dist/portfolio-client-app",
+  "browser": "src/main.ts",
+  "polyfills": [
+    "zone.js"
+  ],
+  "tsConfig": "tsconfig.app.json",
+  "inlineStyleLanguage": "scss",
+  "assets": [
+    {
+      "glob": "**/*",
+      "input": "public"
+    }
+  ],
+  "styles": [
+    "src/styles.scss"
+  ]
+},
+```
+
+---
+
+**After saving the file:**
+
+1. Run:
+   ```sh
+   ng add angular-cli-ghpages
+   ```
+2. Then deploy:
+   ```sh
+   ng deploy --base-href=/akash-portfolio/
+   ```
+
+---
+
+This will resolve the error and allow you to deploy your Angular site to GitHub Pages!
