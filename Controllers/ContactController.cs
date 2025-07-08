@@ -25,52 +25,60 @@ namespace portfolioAPI.Controllers
         [HttpPost("AddContact")]
         public async Task<IActionResult> AddContact([FromForm] ContactMessageDto dto, IFormFile? file)
         {
-            var entity = new ContactMessage
+            try
             {
-                Name = dto.Name,
-                Email = dto.Email,
-                Message = dto.Message
-            };
-
-            if (file != null && file.Length > 0)
-            {
-                using (var ms = new MemoryStream())
+                var entity = new ContactMessage
                 {
-                    await file.CopyToAsync(ms);
-                    entity.FileData = ms.ToArray();
+                    Name = dto.Name,
+                    Email = dto.Email,
+                    Message = dto.Message
+                };
+
+                if (file != null && file.Length > 0)
+                {
+                    using (var ms = new MemoryStream())
+                    {
+                        await file.CopyToAsync(ms);
+                        entity.FileData = ms.ToArray();
+                    }
+                    entity.FileName = file.FileName;
+                    entity.ContentType = file.ContentType;
                 }
-                entity.FileName = file.FileName;
-                entity.ContentType = file.ContentType;
-            }
 
-            // Send email before saving to DB
-            var emailBody = $"Name: {dto.Name}\nEmail: {dto.Email}\nMessage: {dto.Message}";
-            if (file != null && file.Length > 0)
+                // Send email before saving to DB
+                var emailBody = $"Name: {dto.Name}\nEmail: {dto.Email}\nMessage: {dto.Message}";
+                if (file != null && file.Length > 0)
+                {
+                    emailBody += $"\nFileName: {file.FileName}";
+                }
+                var emailSent = await EmailService.SendEmailAsync(
+                    to: "akashkce123@gmail.com",
+                    subject: "New Contact Message",
+                    body: emailBody,
+                    file: file
+                );
+                if (!emailSent)
+                {
+                    return StatusCode(500, new { message = "Failed to send email. Data not saved." });
+                }
+
+                // Send thank you email to the user
+                var thankYouBody = $"Hi {dto.Name},\n\nThank you so much for reaching out! I truly appreciate your message and will get back to you as soon as possible.\n\nWith gratitude,\nAkash";
+                await EmailService.SendEmailAsync(
+                    to: dto.Email,
+                    subject: "Thank you for contacting Akash!",
+                    body: thankYouBody
+                );
+
+                _context.ContactMessages.Add(entity);
+                await _context.SaveChangesAsync();
+                return Ok(new { message = "Saved Successfully", id = entity.Id });
+            }
+            catch (Exception ex)
             {
-                emailBody += $"\nFileName: {file.FileName}";
+                // Optionally log ex
+                return StatusCode(500, new { message = "Internal server error.", error = ex.Message });
             }
-            var emailSent = await EmailService.SendEmailAsync(
-                to: "akashkce123@gmail.com",
-                subject: "New Contact Message",
-                body: emailBody,
-                file: file
-            );
-            if (!emailSent)
-            {
-                return StatusCode(500, new { message = "Failed to send email. Data not saved." });
-            }
-
-            // Send thank you email to the user
-            var thankYouBody = $"Hi {dto.Name},\n\nThank you so much for reaching out! I truly appreciate your message and will get back to you as soon as possible.\n\nWith gratitude,\nAkash";
-            await EmailService.SendEmailAsync(
-                to: dto.Email,
-                subject: "Thank you for contacting Akash!",
-                body: thankYouBody
-            );
-
-            _context.ContactMessages.Add(entity);
-            await _context.SaveChangesAsync();
-            return Ok(new { message = "Saved Successfully", id = entity.Id });
         }
 
        
