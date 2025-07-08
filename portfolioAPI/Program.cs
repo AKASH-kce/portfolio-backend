@@ -27,12 +27,16 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 // });
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowFrontend", policy =>
-        policy
-            .AllowAnyOrigin()
-            .AllowAnyHeader()
-            .AllowAnyMethod());
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
 });
+
+
+
 
 var app = builder.Build();
 
@@ -44,8 +48,8 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.UseCors("AllowFrontend"); 
-
+// app.UseCors("AllowFrontend"); 
+app.UseCors("AllowAll");
 app.UseAuthorization();
 
 app.MapControllers();
