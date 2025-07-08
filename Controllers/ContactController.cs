@@ -70,8 +70,8 @@ namespace portfolioAPI.Controllers
                     body: thankYouBody
                 );
 
-                _context.ContactMessages.Add(entity);
-                await _context.SaveChangesAsync();
+                // _context.ContactMessages.Add(entity);
+                // await _context.SaveChangesAsync();
                 return Ok(new { message = "Saved Successfully", id = entity.Id });
             }
             catch (Exception ex)
