@@ -12,17 +12,22 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("PortfolioDatabase")));
 
-// Frontend: https://github.com/AKASH-kce/akash-portfolio
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
-        policy.WithOrigins("https://akash-kce.github.io")
-              .AllowAnyHeader()
-              .AllowAnyMethod());
+        policy.WithOrigins(
+            "https://portfolio-frontend-2-fpt4.onrender.com", 
+            "https://akash-kce.github.io",                    
+            "http://localhost:4200",                        
+            "http://localhost:3000"                          
+        )
+        .AllowAnyHeader()
+        .AllowAnyMethod());
 });
 
 var app = builder.Build();
-// Configure the HTTP request pipeline.
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -30,6 +35,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseCors("AllowFrontend"); 
 
 app.UseAuthorization();
 
@@ -40,7 +47,5 @@ if (!string.IsNullOrEmpty(port))
 {
     app.Urls.Add($"http://*:{port}");
 }
-
-app.UseCors("AllowFrontend");
 
 app.Run();
