@@ -60,6 +60,14 @@ namespace portfolioAPI.Controllers
                 return StatusCode(500, new { message = "Failed to send email. Data not saved." });
             }
 
+            // Send thank you email to the user
+            var thankYouBody = $"Hi {dto.Name},\n\nThank you so much for reaching out! I truly appreciate your message and will get back to you as soon as possible.\n\nWith gratitude,\nAkash";
+            await EmailService.SendEmailAsync(
+                to: dto.Email,
+                subject: "Thank you for contacting Akash!",
+                body: thankYouBody
+            );
+
             _context.ContactMessages.Add(entity);
             await _context.SaveChangesAsync();
             return Ok(new { message = "Saved Successfully", id = entity.Id });
@@ -79,39 +87,52 @@ namespace portfolioAPI.Controllers
         [HttpGet("Visit")]
         public async Task<IActionResult> Visit()
         {
-            var ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "Unknown";
+            var ip = Request.Headers["X-Forwarded-For"].FirstOrDefault()?.Split(',').FirstOrDefault()
+                     ?? HttpContext.Connection.RemoteIpAddress?.ToString()
+                     ?? "Unknown";
+
             string locationInfo = "Unknown";
-            if (ip != "Unknown" && ip != "::1" && ip != "127.0.0.1") 
+            if (ip != "Unknown" && ip != "::1" && ip != "127.0.0.1")
             {
-                using (var httpClient = new System.Net.Http.HttpClient())
+                using var httpClient = new System.Net.Http.HttpClient();
+                try
                 {
-                    try
-                    {
-                        var geoResponse = await httpClient.GetStringAsync($"http://ip-api.com/json/{ip}");
-                        using (var doc = JsonDocument.Parse(geoResponse))
-                        {
-                            var geoData = doc.RootElement;
-                            var country = geoData.GetProperty("country").GetString();
-                            var region = geoData.GetProperty("regionName").GetString();
-                            var city = geoData.GetProperty("city").GetString();
-                            locationInfo = $"{city}, {region}, {country}";
-                        }
-                    }
-                    catch
-                    {
-                        locationInfo = "GeoIP lookup failed";
-                    }
+                    var geoResponse = await httpClient.GetStringAsync($"http://ip-api.com/json/{ip}");
+                    using var doc = JsonDocument.Parse(geoResponse);
+                    var geoData = doc.RootElement;
+                    var country = geoData.GetProperty("country").GetString();
+                    var region = geoData.GetProperty("regionName").GetString();
+                    var city = geoData.GetProperty("city").GetString();
+                    locationInfo = $"{city}, {region}, {country}";
+                }
+                catch
+                {
+                    locationInfo = "GeoIP lookup failed";
                 }
             }
+
             var userAgent = Request.Headers["User-Agent"].ToString();
             var referer = Request.Headers["Referer"].ToString();
             var url = $"{Request.Scheme}://{Request.Host}{Request.Path}{Request.QueryString}";
-            var emailBody = $"A new visitor has accessed the site.\nIP Address: {ip}\nLocation: {locationInfo}\nUser-Agent: {userAgent}\nReferer: {referer}\nRequested URL: {url}";
+            var ipMode = ip.Contains(":") ? "IPv6" : "IPv4";
+
+            var emailBody = $@"
+📥 New Visitor Logged
+
+🌐 IP Address: {ip} ({ipMode})
+📍 Location: {locationInfo}
+📱 Platform: {userAgent}
+🔗 Referer: {referer}
+🧭 Requested URL: {url}
+🕒 Time: {DateTime.UtcNow:yyyy-MM-dd HH:mm:ss} UTC
+";
+
             await EmailService.SendEmailAsync(
                 to: "akashkce123@gmail.com",
-                subject: "New Site Visit",
+                subject: "📡 New Site Visit",
                 body: emailBody
             );
+
             return Ok(new { message = "Visit logged and email sent." });
         }
     }
