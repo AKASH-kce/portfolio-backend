@@ -13,17 +13,25 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("PortfolioDatabase")));
 
 
+// builder.Services.AddCors(options =>
+// {
+//     options.AddPolicy("AllowFrontend", policy =>
+//         policy.WithOrigins(
+//             "https://portfolio-frontend-2-fpt4.onrender.com", 
+//             "https://akash-kce.github.io",                    
+//             "http://localhost:4200",                        
+//             "http://localhost:3000"                          
+//         )
+//         .AllowAnyHeader()
+//         .AllowAnyMethod());
+// });
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
-        policy.WithOrigins(
-            "https://portfolio-frontend-2-fpt4.onrender.com", 
-            "https://akash-kce.github.io",                    
-            "http://localhost:4200",                        
-            "http://localhost:3000"                          
-        )
-        .AllowAnyHeader()
-        .AllowAnyMethod());
+        policy
+            .AllowAnyOrigin()
+            .AllowAnyHeader()
+            .AllowAnyMethod());
 });
 
 var app = builder.Build();
