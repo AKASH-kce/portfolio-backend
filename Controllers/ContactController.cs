@@ -22,7 +22,7 @@ namespace portfolioAPI.Controllers
         {
             try
             {
-                // Prepare email content
+            
                 var emailBody = $"Name: {dto.Name}\nEmail: {dto.Email}\nMessage: {dto.Message}";
                 if (file != null && file.Length > 0)
                 {
@@ -39,7 +39,6 @@ namespace portfolioAPI.Controllers
                     return StatusCode(500, new { message = "Failed to send email." });
                 }
 
-                // Send thank you email to the user
                 var thankYouBody = $"Hi {dto.Name},\n\nThank you so much for reaching out! I truly appreciate your message and will get back to you as soon as possible.\n\nWith gratitude,\nAkash";
                 await EmailService.SendEmailAsync(
                     to: dto.Email,
@@ -47,12 +46,11 @@ namespace portfolioAPI.Controllers
                     body: thankYouBody
                 );
 
-                // No database, just return success
                 return Ok(new { message = "Email sent successfully." });
             }
             catch (Exception ex)
             {
-                // Optionally log ex
+              
                 return StatusCode(500, new { message = "Internal server error.", error = ex.Message });
             }
         }
@@ -60,8 +58,7 @@ namespace portfolioAPI.Controllers
         [HttpGet("DownloadFile/{id}")]
         public async Task<IActionResult> DownloadFile(int id)
         {
-            // This endpoint still requires database access.
-            // If you want to remove all DB code, you should remove or update this endpoint as well.
+        
             return NotFound();
         }
 
