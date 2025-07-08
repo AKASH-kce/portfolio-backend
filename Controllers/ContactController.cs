@@ -1,7 +1,4 @@
-// Controllers/ContactController.cs
 using Microsoft.AspNetCore.Mvc;
-using portfolioAPI.Data;
-using portfolioAPI.Models;
 using portfolioAPI.Dtos;
 using System.Net;
 using System.Net.Mail;
@@ -13,12 +10,10 @@ namespace portfolioAPI.Controllers
     [Route("api/[controller]")]
     public class ContactController : ControllerBase
     {
-        private readonly AppDbContext _context;
         private readonly ILogger<ContactController> _logger;
 
-        public ContactController(ILogger<ContactController> logger, AppDbContext context)
+        public ContactController(ILogger<ContactController> logger)
         {
-            _context = context;
             _logger = logger;
         }
 
@@ -27,25 +22,7 @@ namespace portfolioAPI.Controllers
         {
             try
             {
-                var entity = new ContactMessage
-                {
-                    Name = dto.Name,
-                    Email = dto.Email,
-                    Message = dto.Message
-                };
-
-                if (file != null && file.Length > 0)
-                {
-                    using (var ms = new MemoryStream())
-                    {
-                        await file.CopyToAsync(ms);
-                        entity.FileData = ms.ToArray();
-                    }
-                    entity.FileName = file.FileName;
-                    entity.ContentType = file.ContentType;
-                }
-
-                // Send email before saving to DB
+                // Prepare email content
                 var emailBody = $"Name: {dto.Name}\nEmail: {dto.Email}\nMessage: {dto.Message}";
                 if (file != null && file.Length > 0)
                 {
@@ -59,7 +36,7 @@ namespace portfolioAPI.Controllers
                 );
                 if (!emailSent)
                 {
-                    return StatusCode(500, new { message = "Failed to send email. Data not saved." });
+                    return StatusCode(500, new { message = "Failed to send email." });
                 }
 
                 // Send thank you email to the user
@@ -70,9 +47,8 @@ namespace portfolioAPI.Controllers
                     body: thankYouBody
                 );
 
-                // _context.ContactMessages.Add(entity);
-                // await _context.SaveChangesAsync();
-                return Ok(new { message = "Saved Successfully", id = entity.Id });
+                // No database, just return success
+                return Ok(new { message = "Email sent successfully." });
             }
             catch (Exception ex)
             {
@@ -81,15 +57,12 @@ namespace portfolioAPI.Controllers
             }
         }
 
-       
         [HttpGet("DownloadFile/{id}")]
         public async Task<IActionResult> DownloadFile(int id)
         {
-            var contact = await _context.ContactMessages.FindAsync(id);
-            if (contact == null || contact.FileData == null)
-                return NotFound();
-
-            return File(contact.FileData, contact.ContentType ?? "application/octet-stream", contact.FileName);
+            // This endpoint still requires database access.
+            // If you want to remove all DB code, you should remove or update this endpoint as well.
+            return NotFound();
         }
 
         [HttpGet("Visit")]
