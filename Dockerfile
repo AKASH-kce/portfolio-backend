@@ -6,6 +6,10 @@ WORKDIR /src
 COPY portfolioAPI/portfolioAPI.csproj ./portfolioAPI/
 RUN dotnet restore ./portfolioAPI/portfolioAPI.csproj
 
+# Install EF Core CLI tools
+RUN dotnet tool install --global dotnet-ef
+ENV PATH="$PATH:/root/.dotnet/tools"
+
 # Copy the rest of the code
 COPY portfolioAPI/. ./portfolioAPI/
 
