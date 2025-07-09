@@ -70,6 +70,7 @@ namespace portfolioAPI.Controllers
 
             _context.ContactMessages.Add(entity);
             await _context.SaveChangesAsync();
+
             return Ok(new { message = "Saved Successfully", id = entity.Id });
         }
 

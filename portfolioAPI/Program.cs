@@ -8,7 +8,10 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("PortfolioDatabase")));
+    options.UseNpgsql(
+        builder.Configuration.GetConnectionString("PortfolioDatabase")
+    )
+);
 
 builder.Services.AddCors(options =>
 {
