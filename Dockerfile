@@ -12,8 +12,11 @@ COPY portfolioAPI/. ./portfolioAPI/
 WORKDIR /src/portfolioAPI
 RUN dotnet publish -c Release -o /app/out
 
+# Run migrations at build time
+RUN dotnet ef database update
+
 # Runtime stage
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 WORKDIR /app
 COPY --from=build /app/out ./
-ENTRYPOINT ["sh", "-c", "dotnet ef database update && dotnet portfolioAPI.dll"] 
+ENTRYPOINT ["dotnet", "portfolioAPI.dll"] 
