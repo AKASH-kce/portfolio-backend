@@ -16,4 +16,4 @@ RUN dotnet publish -c Release -o /app/out
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 WORKDIR /app
 COPY --from=build /app/out ./
-ENTRYPOINT ["dotnet", "portfolioAPI.dll"] 
+ENTRYPOINT ["sh", "-c", "dotnet ef database update && dotnet portfolioAPI.dll"] 
