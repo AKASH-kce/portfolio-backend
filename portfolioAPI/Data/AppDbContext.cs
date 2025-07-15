@@ -8,5 +8,6 @@ namespace portfolioAPI.Data
     {
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
         public DbSet<ContactMessage> ContactMessages { get; set; }
+        public DbSet<User> Users { get; set; }
     }
 }

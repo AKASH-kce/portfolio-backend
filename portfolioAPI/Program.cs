@@ -8,8 +8,8 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(
-        builder.Configuration.GetConnectionString("PortfolioDatabase")
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("DefaultConnection")
     )
 );
 
