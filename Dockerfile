@@ -26,4 +26,5 @@ COPY entrypoint.sh ./
 RUN dotnet tool install --global dotnet-ef
 ENV PATH="$PATH:/root/.dotnet/tools"
 RUN chmod +x ./entrypoint.sh
+EXPOSE 10000
 ENTRYPOINT ["./entrypoint.sh"] 
