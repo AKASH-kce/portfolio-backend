@@ -16,15 +16,11 @@ COPY portfolioAPI/. ./portfolioAPI/
 WORKDIR /src/portfolioAPI
 RUN dotnet publish -c Release -o /app/out
 
-# Runtime stage (use SDK image so dotnet-ef is available)
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS runtime
+# Run migrations at build time
+RUN dotnet ef database update
+
+# Runtime stage
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 WORKDIR /app
 COPY --from=build /app/out ./
-COPY --from=build /src/portfolioAPI/portfolioAPI.csproj ./
-COPY entrypoint.sh ./
-# Install dotnet-ef in runtime stage
-RUN dotnet tool install --global dotnet-ef
-ENV PATH="$PATH:/root/.dotnet/tools"
-RUN chmod +x ./entrypoint.sh
-EXPOSE 10000
-ENTRYPOINT ["./entrypoint.sh"] 
+ENTRYPOINT ["dotnet", "portfolioAPI.dll"] 
