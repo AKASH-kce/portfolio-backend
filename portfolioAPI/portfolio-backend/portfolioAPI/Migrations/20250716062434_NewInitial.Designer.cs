@@ -8,11 +8,11 @@ using portfolioAPI.Data;
 
 #nullable disable
 
-namespace portfolioAPI.Migrations
+namespace portfolioAPI.portfoliobackend.portfolioAPI.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250716052542_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20250716062434_NewInitial")]
+    partial class NewInitial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
