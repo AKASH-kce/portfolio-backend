@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e
+set -ex
 
 # Run migrations
 export PATH="$PATH:/root/.dotnet/tools"
