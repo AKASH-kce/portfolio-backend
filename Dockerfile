@@ -16,11 +16,10 @@ COPY portfolioAPI/. ./portfolioAPI/
 WORKDIR /src/portfolioAPI
 RUN dotnet publish -c Release -o /app/out
 
-# Runtime stage
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
+# Runtime stage (use SDK image so dotnet-ef is available)
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS runtime
 WORKDIR /app
 COPY --from=build /app/out ./
-# Copy entrypoint script
 COPY entrypoint.sh ./
 RUN chmod +x ./entrypoint.sh
 ENTRYPOINT ["./entrypoint.sh"] 
