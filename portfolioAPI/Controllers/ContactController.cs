@@ -122,8 +122,21 @@ namespace portfolioAPI.Controllers
             var userAgent = Request.Headers["User-Agent"].ToString();
             var referer = Request.Headers["Referer"].ToString();
             var url = $"{Request.Scheme}://{Request.Host}{Request.Path}{Request.QueryString}";
-            var ipMode = ip.Contains(":") ? "IPv6" : "IPv4";
 
+            // Save visit to database
+            var visit = new Visit
+            {
+                Timestamp = DateTime.UtcNow,
+                IP = ip,
+                Location = locationInfo,
+                UserAgent = userAgent,
+                Referer = referer,
+                Url = url
+            };
+            _context.Visits.Add(visit);
+            await _context.SaveChangesAsync();
+
+            var ipMode = ip.Contains(":") ? "IPv6" : "IPv4";
             var emailBody = $@"
 📥 New Visitor Logged
 
@@ -142,6 +155,17 @@ namespace portfolioAPI.Controllers
             );
 
             return Ok(new { message = "Visit logged and email sent." });
+        }
+
+        [HttpGet("VisitStats")]
+        public IActionResult GetVisitStats()
+        {
+            var stats = _context.Visits
+                .GroupBy(v => v.Timestamp.Date)
+                .Select(g => new { Date = g.Key, Count = g.Count() })
+                .OrderBy(x => x.Date)
+                .ToList();
+            return Ok(stats);
         }
     }
 }
