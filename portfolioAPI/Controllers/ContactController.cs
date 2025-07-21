@@ -160,28 +160,33 @@ namespace portfolioAPI.Controllers
         [HttpGet("VisitStats")]
         public IActionResult GetVisitStats()
         {
-            var stats = _context.Visits
+            var grouped = _context.Visits
                 .GroupBy(v => v.Timestamp.Date)
                 .Select(g => new {
                     Date = g.Key,
                     Count = g.Count(),
-                    // Get all states for this date group
-                    States = g.Select(v => v.Location)
-                        .Where(loc => !string.IsNullOrEmpty(loc))
-                        .Select(loc => {
-                            var parts = loc.Split(',');
-                            return parts.Length >= 2 ? parts[1].Trim() : "Unknown";
-                        })
-                        .GroupBy(state => state)
-                        .Select(stateGroup => new {
-                            State = stateGroup.Key,
-                            Count = stateGroup.Count()
-                        })
-                        .OrderByDescending(s => s.Count)
-                        .ToList()
+                    Locations = g.Select(v => v.Location).ToList()
                 })
                 .OrderBy(x => x.Date)
                 .ToList();
+            var stats = grouped.Select(g => new {
+                Date = g.Date,
+                Count = g.Count,
+                States = g.Locations
+                    .Where(loc => !string.IsNullOrEmpty(loc))
+                    .Select(loc => {
+                        var parts = loc.Split(',');
+                        return parts.Length >= 2 ? parts[1].Trim() : "Unknown";
+                    })
+                    .GroupBy(state => state)
+                    .Select(stateGroup => new {
+                        State = stateGroup.Key,
+                        Count = stateGroup.Count()
+                    })
+                    .OrderByDescending(s => s.Count)
+                    .ToList()
+            }).ToList();
+
             return Ok(stats);
         }
 
