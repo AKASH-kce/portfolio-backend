@@ -196,5 +196,14 @@ namespace portfolioAPI.Controllers
             var total = _context.Visits.Count();
             return Ok(new { TotalVisits = total });
         }
+
+        [HttpGet("AllVisits")]
+        public IActionResult GetAllVisits()
+        {
+            var visits = _context.Visits
+                .OrderByDescending(v => v.Timestamp)
+                .ToList();
+            return Ok(visits);
+        }
     }
 }
