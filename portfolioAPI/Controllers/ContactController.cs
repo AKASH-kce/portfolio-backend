@@ -162,10 +162,34 @@ namespace portfolioAPI.Controllers
         {
             var stats = _context.Visits
                 .GroupBy(v => v.Timestamp.Date)
-                .Select(g => new { Date = g.Key, Count = g.Count() })
+                .Select(g => new {
+                    Date = g.Key,
+                    Count = g.Count(),
+                    // Get all states for this date group
+                    States = g.Select(v => v.Location)
+                        .Where(loc => !string.IsNullOrEmpty(loc))
+                        .Select(loc => {
+                            var parts = loc.Split(',');
+                            return parts.Length >= 2 ? parts[1].Trim() : "Unknown";
+                        })
+                        .GroupBy(state => state)
+                        .Select(stateGroup => new {
+                            State = stateGroup.Key,
+                            Count = stateGroup.Count()
+                        })
+                        .OrderByDescending(s => s.Count)
+                        .ToList()
+                })
                 .OrderBy(x => x.Date)
                 .ToList();
             return Ok(stats);
+        }
+
+        [HttpGet("TotalVisits")]
+        public IActionResult GetTotalVisits()
+        {
+            var total = _context.Visits.Count();
+            return Ok(new { TotalVisits = total });
         }
     }
 }
