@@ -205,5 +205,27 @@ namespace portfolioAPI.Controllers
                 .ToList();
             return Ok(visits);
         }
+
+        [HttpDelete("DeleteVisit/{id}")]
+        public IActionResult DeleteVisit(int id)
+        {
+            var visit = _context.Visits.FirstOrDefault(v => v.Id == id);
+            if (visit == null)
+                return NotFound();
+            _context.Visits.Remove(visit);
+            _context.SaveChanges();
+            return Ok(new { message = "Visit deleted" });
+        }
+
+        [HttpDelete("DeleteUser/{id}")]
+        public IActionResult DeleteUser(int id)
+        {
+            var user = _context.Users.FirstOrDefault(u => u.Id == id);
+            if (user == null)
+                return NotFound();
+            _context.Users.Remove(user);
+            _context.SaveChanges();
+            return Ok(new { message = "User deleted" });
+        }
     }
 }
