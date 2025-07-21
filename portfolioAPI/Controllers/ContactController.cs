@@ -169,22 +169,53 @@ namespace portfolioAPI.Controllers
                 })
                 .OrderBy(x => x.Date)
                 .ToList();
-            var stats = grouped.Select(g => new {
-                Date = g.Date,
-                Count = g.Count,
-                States = g.Locations
-                    .Where(loc => !string.IsNullOrEmpty(loc))
-                    .Select(loc => {
+            var stats = grouped.Select(g => {
+                // Parse states and countries from location strings
+                var stateList = new List<string>();
+                var countryList = new List<string>();
+                foreach (var loc in g.Locations)
+                {
+                    if (!string.IsNullOrEmpty(loc))
+                    {
                         var parts = loc.Split(',');
-                        return parts.Length >= 2 ? parts[1].Trim() : "Unknown";
-                    })
-                    .GroupBy(state => state)
+                        if (parts.Length >= 3)
+                        {
+                            // e.g., Navi Mumbai, Maharashtra, India
+                            stateList.Add(parts[1].Trim());
+                            countryList.Add(parts[2].Trim());
+                        }
+                        else if (parts.Length == 2)
+                        {
+                            // e.g., City, Country
+                            stateList.Add("Unknown");
+                            countryList.Add(parts[1].Trim());
+                        }
+                        else if (parts.Length == 1)
+                        {
+                            countryList.Add(parts[0].Trim());
+                        }
+                    }
+                }
+                var states = stateList.GroupBy(s => s)
                     .Select(stateGroup => new {
                         State = stateGroup.Key,
                         Count = stateGroup.Count()
                     })
                     .OrderByDescending(s => s.Count)
-                    .ToList()
+                    .ToList();
+                var countries = countryList.GroupBy(c => c)
+                    .Select(countryGroup => new {
+                        Country = countryGroup.Key,
+                        Count = countryGroup.Count()
+                    })
+                    .OrderByDescending(c => c.Count)
+                    .ToList();
+                return new {
+                    Date = g.Date,
+                    Count = g.Count,
+                    States = states,
+                    Countries = countries
+                };
             }).ToList();
 
             return Ok(stats);
