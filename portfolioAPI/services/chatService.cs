@@ -1,10 +1,10 @@
-﻿using System.Net.Http;
+﻿using Microsoft.Extensions.Configuration;
+using portfolioAPI.Services;
+using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Configuration;
-using portfolioAPI.Services;
 
 namespace portfolioAPI.services
 {
@@ -17,10 +17,12 @@ namespace portfolioAPI.services
 
         public ChatService(IConfiguration config)
         {
-            _apiKey = config["OpenRouter:ApiKey"]; 
+            _apiKey = config["OpenRouter:ApiKey"];
             _httpClient = new HttpClient();
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _apiKey);
-            _httpClient.DefaultRequestHeaders.Add("HTTP-Referer", "https://akash-s-portfolio.onrender.com");
+
+            if (!string.IsNullOrEmpty(_apiKey))
+                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _apiKey);
+
             _httpClient.DefaultRequestHeaders.Add("X-Title", "AkashPortfolioBot");
         }
 
@@ -28,7 +30,7 @@ namespace portfolioAPI.services
         {
             var payload = new
             {
-                model = "mistralai/mistral-7b-instruct", 
+                model = "mistralai/mistral-7b-instruct",
                 messages = new[]
                 {
                     new { role = "system", content = SystemMessage },
@@ -42,7 +44,12 @@ namespace portfolioAPI.services
 
             var responseContent = await response.Content.ReadAsStringAsync();
             using var doc = JsonDocument.Parse(responseContent);
-            return doc.RootElement.GetProperty("choices")[0].GetProperty("message").GetProperty("content").GetString();
+
+            return doc.RootElement
+                      .GetProperty("choices")[0]
+                      .GetProperty("message")
+                      .GetProperty("content")
+                      .GetString();
         }
     }
 }
