@@ -1,9 +1,12 @@
 using Microsoft.EntityFrameworkCore;
 using portfolioAPI.Data;
+using portfolioAPI.services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services.AddSingleton<ChatService>();
+builder.Services.AddHttpClient();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
